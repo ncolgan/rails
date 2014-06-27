@@ -1,4 +1,192 @@
-## Rails 4.1.2 (June 26, 2014) ##
+*   Move 'dependent: :destroy' handling for 'belongs_to'
+    from 'before_destroy' to 'after_destroy' callback chain
+
+    Fix #12380.
+
+    *Ivan Antropov*
+
+*   Detect in-place modifications on String attributes.
+
+    Before this change user have to mark the attribute as changed to it be persisted
+    in the database. Now it is not required anymore.
+
+    Before:
+
+        user = User.first
+        user.name << ' Griffin'
+        user.name_will_change!
+        user.save
+        user.reload.name # => "Sean Griffin"
+
+    After:
+
+        user = User.first
+        user.name << ' Griffin'
+        user.save
+        user.reload.name # => "Sean Griffin"
+
+    *Sean Griffin*
+
+*   Add `ActiveRecord::Base#validate!` that raises `RecordInvalid` if the record
+    is invalid.
+
+    *Bogdan Gusiev*, *Marc Schütz*
+
+*   Support for adding and removing foreign keys. Foreign keys are now
+    a part of `schema.rb`. This is supported by Mysql2Adapter, MysqlAdapter
+    and PostgreSQLAdapter.
+
+    Many thanks to *Matthew Higgins* for laying the foundation with his work on
+    [foreigner](https://github.com/matthuhiggins/foreigner).
+
+    Example:
+
+        # within your migrations:
+        add_foreign_key :articles, :authors
+        remove_foreign_key :articles, :authors
+
+    *Yves Senn*
+
+*   Fix subtle bugs regarding attribute assignment on models with no primary
+    key. `'id'` will no longer be part of the attributes hash.
+
+    *Sean Griffin*
+
+*   Deprecate automatic counter caches on `has_many :through`. The behavior was
+    broken and inconsistent.
+
+    *Sean Griffin*
+
+*   `preload` preserves readonly flag for associations.
+
+    See #15853.
+
+    *Yves Senn*
+
+*   Assume numeric types have changed if they were assigned to a value that
+    would fail numericality validation, regardless of the old value. Previously
+    this would only occur if the old value was 0.
+
+    Example:
+
+        model = Model.create!(number: 5)
+        model.number = '5wibble'
+        model.number_changed? # => true
+
+    Fixes #14731.
+
+    *Sean Griffin*
+
+*   `reload` no longer merges with the existing attributes.
+    The attribute hash is fully replaced. The record is put into the same state
+    as it would be with `Model.find(model.id)`.
+
+    *Sean Griffin*
+
+*   The object returned from `select_all` must respond to `column_types`.
+    If this is not the case a `NoMethodError` is raised.
+
+    *Sean Griffin*
+
+*   `has_many :through` associations will no longer save the through record
+    twice when added in an `after_create` callback defined before the
+    associations.
+
+    Fixes #3798.
+
+    *Sean Griffin*
+
+*   Detect in-place modifications of PG array types
+
+    *Sean Griffin*
+
+*   Add `bin/rake db:purge` task to empty the current database.
+
+    *Yves Senn*
+
+*   Deprecate `serialized_attributes` without replacement.
+
+    *Sean Griffin*
+
+*   Correctly extract IPv6 addresses from `DATABASE_URI`: the square brackets
+    are part of the URI structure, not the actual host.
+
+    Fixes #15705.
+
+    *Andy Bakun*, *Aaron Stone*
+
+*   Ensure both parent IDs are set on join records when both sides of a
+    through association are new.
+
+    *Sean Griffin*
+
+*   `ActiveRecord::Dirty` now detects in-place changes to mutable values.
+    Serialized attributes on ActiveRecord models will no longer save when
+    unchanged. Fixes #8328.
+
+    Sean Griffin
+
+*   Fixed automatic maintaining test schema to properly handle sql structure
+    schema format.
+
+    Fixes #15394.
+
+    *Wojciech Wnętrzak*
+
+*   Pluck now works when selecting columns from different tables with the same
+    name.
+
+    Fixes #15649
+
+    *Sean Griffin*
+
+*   Remove `cache_attributes` and friends. All attributes are cached.
+
+    *Sean Griffin*
+
+*   Remove deprecated method `ActiveRecord::Base.quoted_locking_column`.
+
+    *Akshay Vishnoi*
+
+*   `ActiveRecord::FinderMethods.find` with block can handle proc parameter as
+    `Enumerable#find` does.
+
+    Fixes #15382.
+
+    *James Yang*
+
+*   Make timezone aware attributes work with PostgreSQL array columns.
+
+    Fixes #13402.
+
+    *Kuldeep Aggarwal*, *Sean Griffin*
+
+*   `ActiveRecord::SchemaMigration` has no primary key regardless of the
+    `primary_key_prefix_type` configuration.
+
+    Fixes #15051.
+
+    *JoseLuis Torres*, *Yves Senn*
+
+*   `rake db:migrate:status` works with legacy migration numbers like `00018_xyz.rb`.
+
+    Fixes #15538.
+
+    *Yves Senn*
+
+*   Baseclass becomes! subclass.
+
+    Before this change, a record which changed its STI type, could not be
+    updated.
+
+    Fixes #14785.
+
+    *Matthew Draper*, *Earl St Sauver*, *Edo Balvers*
+
+*   Remove deprecated `ActiveRecord::Migrator.proper_table_name`. Use the
+    `proper_table_name` instance method on `ActiveRecord::Migration` instead.
+
+    *Akshay Vishnoi*
 
 *   Fix regression on eager loading association based on SQL query rather than
     existing column.
